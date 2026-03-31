@@ -39,6 +39,10 @@ struct Cli {
     /// Display the number of months after the current month
     #[arg(short = 'A', long, value_name = "number", default_value_t = 0)]
     after: u8,
+
+    /// The accent color to use (ANSI, 0-15)
+    #[arg(long, value_name = "number", default_value_t = 3)]
+    accent: u8,
 }
 
 fn days_in_month(year: i32, month: u32) -> u32 {
@@ -81,8 +85,6 @@ fn offset(first_offset: u32, day: u32) -> u32 {
 fn main() {
     let mut cmd = Cli::command();
     let cli = Cli::parse();
-
-    let accent = 3;
 
     if io::stdin().is_terminal() {
         cmd.print_help().unwrap();
@@ -132,7 +134,7 @@ fn main() {
                         wd.to_owned(),
                         width = ws[i] - 1
                     ),
-                    color: accent,
+                    color: cli.accent,
                 }],
             },
         );
@@ -171,5 +173,5 @@ fn main() {
         width = w * 7
     );
 
-    println!("{}\n{}", Fixed(accent).bold().paint(header), g);
+    println!("{}\n{}", Fixed(cli.accent).bold().paint(header), g);
 }
