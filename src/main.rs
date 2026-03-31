@@ -63,6 +63,26 @@ fn offset(first_offset: u32, day: u32) -> u32 {
     first_offset + 6 + day
 }
 
+// fn superscript(s: &str) -> String {
+//     let mut ret = s.to_owned();
+//     for (lhs, rhs) in vec![
+//         ("0", "⁰"),
+//         ("1", "¹"),
+//         ("2", "²"),
+//         ("3", "³"),
+//         ("4", "⁴"),
+//         ("5", "⁵"),
+//         ("6", "⁶"),
+//         ("7", "⁷"),
+//         ("8", "⁸"),
+//         ("9", "⁹"),
+//         (")", "⁾"),
+//     ] {
+//         ret = str::replace(&ret, lhs, rhs);
+//     }
+//     ret
+// }
+
 // offset(3, 1) == 10
 // offset(3, 2) == 11
 // offset(3, 5) == 14
@@ -140,7 +160,7 @@ fn main() {
         );
     }
 
-    for d in 1..days_in_month(now.year(), now.month()) {
+    for d in 1..=days_in_month(now.year(), now.month()) {
         cells.insert(
             offset(first_offset, d),
             Cell {
