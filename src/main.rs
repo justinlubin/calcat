@@ -8,10 +8,38 @@ use item::Item;
 
 use std::{
     collections::HashMap,
-    io::{self, BufRead},
+    io::{self, BufRead, IsTerminal},
 };
 
 use crate::grid::Text;
+
+use clap::{
+    CommandFactory, Parser,
+    builder::{Styles, styling::AnsiColor},
+};
+
+fn styles() -> Styles {
+    Styles::styled()
+        .header(AnsiColor::Green.on_default().bold())
+        .usage(AnsiColor::Green.on_default().bold())
+        .literal(AnsiColor::Cyan.on_default().bold())
+        .placeholder(AnsiColor::Cyan.on_default())
+        .valid(AnsiColor::Green.on_default())
+        .invalid(AnsiColor::Yellow.on_default())
+}
+
+#[derive(Parser)]
+#[command(
+    version,
+    about = "calcat - display a calendar of to-do items",
+    long_about = None,
+    styles = styles(),
+)]
+struct Cli {
+    /// Display the number of months after the current month
+    #[arg(short = 'A', long, value_name = "number", default_value_t = 0)]
+    after: u8,
+}
 
 fn days_in_month(year: i32, month: u32) -> u32 {
     // Wrap to January of the next year if month is December
@@ -51,7 +79,15 @@ fn offset(first_offset: u32, day: u32) -> u32 {
 //     lines: vec![it.text],
 // },))
 fn main() {
+    let mut cmd = Cli::command();
+    let cli = Cli::parse();
+
     let accent = 3;
+
+    if io::stdin().is_terminal() {
+        cmd.print_help().unwrap();
+        return;
+    }
 
     let items: Vec<Item> = io::stdin()
         .lock()
@@ -66,7 +102,9 @@ fn main() {
     let ws = vec![w - 5, w + 2, w + 2, w + 2, w + 2, w + 2, w - 5];
 
     let now = Local::now();
-    let now = now.checked_add_months(Months::new(1)).unwrap();
+    let now = now
+        .checked_add_months(Months::new(cli.after.into()))
+        .unwrap();
     let first_offset = NaiveDate::from_ymd_opt(now.year(), now.month(), 1)
         .unwrap()
         .weekday()
@@ -129,7 +167,7 @@ fn main() {
 
     let header = format!(
         "{:—^width$}",
-        now.format(" %B %Y ").to_string().to_uppercase(),
+        now.format("[ %B %Y ]").to_string().to_uppercase(),
         width = w * 7
     );
 
