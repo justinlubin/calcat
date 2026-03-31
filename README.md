@@ -7,4 +7,4 @@ due:2026-04-01 second task
 due:2026-04-08 third task
 ```
 
-Call with `cat todo.txt | calcat`.
+Call with `cat todo.txt | calcat` or `calcat <todo.txt`.
