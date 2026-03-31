@@ -61,6 +61,9 @@ impl Display for Grid {
                         Some(c) => &c.lines,
                         None => &vec![],
                     };
+                    if lines.len() > *rh {
+                        panic!("Row height too small for cell ({},{})", i, j);
+                    }
                     let blank = Text {
                         text: "".to_owned(),
                         color: 0,
