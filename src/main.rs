@@ -2,7 +2,7 @@ mod grid;
 mod item;
 
 use ansi_term::Colour::Fixed;
-use chrono::{Datelike, Local, Months, NaiveDate};
+use chrono::{Datelike, Days, Local, Months, NaiveDate};
 use grid::{Cell, Grid};
 use item::Item;
 
@@ -123,6 +123,7 @@ fn main() {
     let w = width as usize / 7;
     let ws = vec![w - 5, w + 2, w + 2, w + 2, w + 2, w + 2, w - 5];
 
+    let true_now = Local::now();
     let now = Local::now();
     let now = now
         .checked_add_months(Months::new(cli.after.into()))
@@ -155,18 +156,37 @@ fn main() {
                         width = ws[i] - 1
                     ),
                     color: cli.accent,
+                    bg: 0,
                 }],
             },
         );
     }
 
-    for d in 1..=days_in_month(now.year(), now.month()) {
+    let y = now.year();
+    let m = now.month();
+    for d in 1..=days_in_month(y, m) {
+        let (color, bg) = if y < true_now.year()
+            || y == true_now.year() && m < true_now.month()
+            || y == true_now.year()
+                && m == true_now.month()
+                && d < true_now.day()
+        {
+            (0, 8)
+        } else if y == true_now.year()
+            && m == true_now.month()
+            && d == true_now.day()
+        {
+            (0, 2)
+        } else {
+            (8, 0)
+        };
         cells.insert(
             offset(first_offset, d),
             Cell {
                 lines: vec![Text {
                     text: d.to_string(),
-                    color: 8,
+                    color,
+                    bg,
                 }],
             },
         );
@@ -180,6 +200,7 @@ fn main() {
         c.lines.push(Text {
             text: it.text,
             color: 15,
+            bg: 0,
         });
     }
 

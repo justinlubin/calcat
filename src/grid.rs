@@ -14,6 +14,7 @@ fn truncate_pretty(s: &str, max_chars: usize) -> String {
 pub struct Text {
     pub text: String,
     pub color: u8, // 0-15
+    pub bg: u8,    // 0-15
 }
 
 #[derive(Debug)]
@@ -63,13 +64,14 @@ impl Display for Grid {
                     let blank = Text {
                         text: "".to_owned(),
                         color: 0,
+                        bg: 0,
                     };
                     let text = lines.get(line_idx).unwrap_or(&blank);
                     let line = truncate_pretty(&text.text, *cw - 1);
                     write!(
                         f,
                         "{}",
-                        Fixed(text.color).paint(format!(
+                        Fixed(text.color).on(Fixed(text.bg)).paint(format!(
                             "{:<width$}",
                             line,
                             width = cw
