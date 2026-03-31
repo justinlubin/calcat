@@ -8,3 +8,5 @@ due:2026-04-08 third task
 ```
 
 Call with `cat todo.txt | calcat` or `calcat <todo.txt`.
+
+Display an empty calendar with `echo "" | calcat`.
