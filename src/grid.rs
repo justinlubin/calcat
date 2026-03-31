@@ -1,5 +1,7 @@
 use std::{collections::HashMap, fmt::Display};
 
+use ansi_term::Colour::Fixed;
+
 // https://stackoverflow.com/a/38461750
 fn truncate_pretty(s: &str, max_chars: usize) -> String {
     match s.char_indices().nth(max_chars) {
@@ -9,8 +11,14 @@ fn truncate_pretty(s: &str, max_chars: usize) -> String {
 }
 
 #[derive(Debug)]
+pub struct Text {
+    pub text: String,
+    pub color: u8, // 0-15
+}
+
+#[derive(Debug)]
 pub struct Cell {
-    pub lines: Vec<String>,
+    pub lines: Vec<Text>,
 }
 
 #[derive(Debug)]
@@ -52,14 +60,21 @@ impl Display for Grid {
                         Some(c) => &c.lines,
                         None => &vec![],
                     };
-                    let line = truncate_pretty(
-                        lines
-                            .get(line_idx)
-                            .map(String::as_ref)
-                            .unwrap_or_else(|| ""),
-                        *cw,
-                    );
-                    write!(f, "{:<width$}", line, width = cw)?;
+                    let blank = Text {
+                        text: "".to_owned(),
+                        color: 0,
+                    };
+                    let text = lines.get(line_idx).unwrap_or(&blank);
+                    let line = truncate_pretty(&text.text, *cw - 1);
+                    write!(
+                        f,
+                        "{}",
+                        Fixed(text.color).paint(format!(
+                            "{:<width$}",
+                            line,
+                            width = cw
+                        ))
+                    )?;
                 }
                 writeln!(f)?;
             }

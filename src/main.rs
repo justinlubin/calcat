@@ -11,6 +11,8 @@ use std::{
     io::{self, BufRead},
 };
 
+use crate::grid::Text;
+
 fn days_in_month(year: i32, month: u32) -> u32 {
     // Wrap to January of the next year if month is December
     let (y, m) = if month == 12 {
@@ -49,6 +51,8 @@ fn offset(first_offset: u32, day: u32) -> u32 {
 //     lines: vec![it.text],
 // },))
 fn main() {
+    let accent = 3;
+
     let items: Vec<Item> = io::stdin()
         .lock()
         .lines()
@@ -59,6 +63,7 @@ fn main() {
         terminal_size::terminal_size().unwrap();
 
     let w = width as usize / 7;
+    let ws = vec![w - 5, w + 2, w + 2, w + 2, w + 2, w + 2, w - 5];
 
     let now = Local::now();
     let now = now.checked_add_months(Months::new(1)).unwrap();
@@ -83,7 +88,14 @@ fn main() {
         cells.insert(
             i as u32,
             Cell {
-                lines: vec![format!("{:^width$}", wd.to_owned(), width = w)],
+                lines: vec![Text {
+                    text: format!(
+                        "{:^width$}",
+                        wd.to_owned(),
+                        width = ws[i] - 1
+                    ),
+                    color: accent,
+                }],
             },
         );
     }
@@ -92,7 +104,10 @@ fn main() {
         cells.insert(
             offset(first_offset, d),
             Cell {
-                lines: vec![d.to_string()],
+                lines: vec![Text {
+                    text: d.to_string(),
+                    color: 8,
+                }],
             },
         );
     }
@@ -102,14 +117,21 @@ fn main() {
             continue;
         }
         let c = cells.get_mut(&offset(first_offset, it.due.day())).unwrap();
-        c.lines.push(it.text);
+        c.lines.push(Text {
+            text: it.text,
+            color: 15,
+        });
     }
 
     let h = height as usize / 5 - 1;
 
-    let g = Grid::new(cells, vec![1, h, h, h, h, h], [w].repeat(7)).unwrap();
+    let g = Grid::new(cells, vec![1, h, h, h, h, h], ws).unwrap();
 
-    println!("{:=^width$}", now.format(" %B %Y "), width = w * 7);
+    let header = format!(
+        "{:—^width$}",
+        now.format(" %B %Y ").to_string().to_uppercase(),
+        width = w * 7
+    );
 
-    println!("{}", g);
+    println!("{}\n{}", Fixed(accent).bold().paint(header), g);
 }
