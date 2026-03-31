@@ -1,7 +1,8 @@
 mod grid;
 mod item;
 
-use chrono::{DateTime, Datelike, Local, NaiveDate};
+use ansi_term::Colour::Fixed;
+use chrono::{Datelike, Local, Months, NaiveDate};
 use grid::{Cell, Grid};
 use item::Item;
 
@@ -9,14 +10,6 @@ use std::{
     collections::HashMap,
     io::{self, BufRead},
 };
-
-// https://stackoverflow.com/a/38461750
-fn truncate_pretty(s: &str, max_chars: usize) -> String {
-    match s.char_indices().nth(max_chars) {
-        None => s.to_owned(),
-        Some((idx, _)) => format!("{}…", &s[..idx - 1]),
-    }
-}
 
 fn days_in_month(year: i32, month: u32) -> u32 {
     // Wrap to January of the next year if month is December
@@ -68,6 +61,7 @@ fn main() {
     let w = width as usize / 7;
 
     let now = Local::now();
+    let now = now.checked_add_months(Months::new(1)).unwrap();
     let first_offset = NaiveDate::from_ymd_opt(now.year(), now.month(), 1)
         .unwrap()
         .weekday()
@@ -104,6 +98,9 @@ fn main() {
     }
 
     for it in items {
+        if it.due.year() != now.year() || it.due.month() != now.month() {
+            continue;
+        }
         let c = cells.get_mut(&offset(first_offset, it.due.day())).unwrap();
         c.lines.push(it.text);
     }

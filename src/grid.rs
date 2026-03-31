@@ -1,5 +1,13 @@
 use std::{collections::HashMap, fmt::Display};
 
+// https://stackoverflow.com/a/38461750
+fn truncate_pretty(s: &str, max_chars: usize) -> String {
+    match s.char_indices().nth(max_chars) {
+        None => s.to_owned(),
+        Some((idx, _)) => format!("{}…", &s[..idx - 1]),
+    }
+}
+
 #[derive(Debug)]
 pub struct Cell {
     pub lines: Vec<String>,
@@ -44,10 +52,13 @@ impl Display for Grid {
                         Some(c) => &c.lines,
                         None => &vec![],
                     };
-                    let line = lines
-                        .get(line_idx)
-                        .map(String::as_ref)
-                        .unwrap_or_else(|| "");
+                    let line = truncate_pretty(
+                        lines
+                            .get(line_idx)
+                            .map(String::as_ref)
+                            .unwrap_or_else(|| ""),
+                        *cw,
+                    );
                     write!(f, "{:<width$}", line, width = cw)?;
                 }
                 writeln!(f)?;
